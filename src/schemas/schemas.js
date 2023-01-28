@@ -29,8 +29,14 @@ const schemaLogin = Joi.object({
     tlds: { allow: ["com", "net"] },
   }),
 });
+const schemaEmail = Joi.object({
+  email: Joi.string()
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+    .required(),
+});
 module.exports = {
   schemaPost,
   schemaPut,
   schemaLogin,
+  schemaEmail,
 };
