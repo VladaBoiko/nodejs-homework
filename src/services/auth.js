@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const sha256 = require("sha256");
 const { User } = require("../models/userModel");
+const { sendMails } = require("../helpers/mails");
 const gravatar = require("gravatar");
 const {
   NotAuthorizedError,
@@ -75,9 +77,50 @@ const current = async (userId) => {
     console.error(err);
   }
 };
+const registerVerification = async (verificationToken) => {
+  const user = await User.findOne({
+    verificationToken,
+    verify: false,
+  });
+
+  if (!user) {
+    throw new NotAuthorizedError("User not found");
+  }
+
+  user.verify = true;
+  user.verificationToken = "null";
+
+  await user.save();
+
+  const subject = "Thank you for your registration!";
+  const message = "Registration successful";
+
+  await sendMails(user.email, subject, message);
+};
+const verification = async (email) => {
+  const user = await User.findOne({ email });
+  const port = process.env.PORT;
+  if (user.verify) {
+    throw new NotAuthorizedError("Verification has already been passed");
+  }
+
+  const verificationToken = sha256(email + process.env.JWT_SECRET);
+
+  user.verificationToken = verificationToken;
+
+  await user.save();
+
+  const subject = "Thank you for registration";
+  const message = `Please, confirm your email address
+      http://localhost:${port}/api/users/verify/${verificationToken}`;
+
+  await sendMails(user.email, subject, message);
+};
 module.exports = {
   registration,
   login,
   logout,
   current,
+  registerVerification,
+  verification,
 };

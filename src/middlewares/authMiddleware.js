@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { NotAuthorizedError } = require("../helpers/errors");
+const schema = require("../schemas/schemas");
 const authMiddleware = (req, res, next) => {
   const [tokenType, token] = req.headers.authorization.split(" ");
   console.log(tokenType);
@@ -18,6 +19,14 @@ const authMiddleware = (req, res, next) => {
     );
   }
 };
+const emailMiddlevare = (req, res, next) => {
+ const validationResult = schema.schemaEmail.validate(req.body);
+ if (validationResult.error) {
+   return res.status(400).json({ status: validationResult.error });
+ }
+  next();
+};
 module.exports = {
   authMiddleware,
+  emailMiddlevare,
 };

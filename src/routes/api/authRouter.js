@@ -4,10 +4,17 @@ const controlers = require("../../controlers/authorization/index");
 const { fileController } = require("../../controlers/fileSystem/fileControler");
 const userMiddlevare = require("../../middlewares/userMiddlevare");
 const { fileMiddleware } = require("../../middlewares/fileMiddleware");
+const { emailMiddlevare } = require("../../middlewares/authMiddleware");
 
 router.post("/register", async (req, res, next) => {
   controlers.registrationController(req, res, next);
 });
+router.post("/verify", emailMiddlevare, controlers.verificationController);
+
+router.get(
+  "/verify/:verificationToken",
+  controlers.registerVerificationController
+);
 router.get("/login", async (req, res, next) => {
   controlers.loginController(req, res, next);
 });
